@@ -1,0 +1,10 @@
+ktor:
+  application:
+    modules:
+      - es.hgg.sharexp.app.ApplicationKt.configureApplication
+  deployment:
+    port: $PORT:8080
+database:
+  url: $DB_URL:r2dbc:mariadb://localhost:3306/sharexp
+  user: $?DB_USER
+  password: $?DB_PASSWORD

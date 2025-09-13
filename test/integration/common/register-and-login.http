@@ -1,0 +1,30 @@
+
+### Register with random data
+< {%
+    client.global.set("username", $random.name["username"])
+    client.global.set("email", $random.email)
+    client.global.set("password", $random.internet["slug"] + $randomInt)
+%}
+POST {{baseUrl}}/auth/register
+Content-Type: application/x-www-form-urlencoded
+
+username={{username}}&email={{email}}&password={{password}}
+
+> {%
+    client.test("registration", () => {
+        client.assert(response.status == 200, "Invalid response code")
+    })
+%}
+
+### Login
+# @no-redirect
+POST {{baseUrl}}/auth/login
+Content-Type: application/x-www-form-urlencoded
+
+email={{email}}&password={{password}}
+
+> {%
+    client.test("login", () => {
+        client.assert(response.status == 302)
+    })
+%}
