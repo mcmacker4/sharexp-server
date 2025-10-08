@@ -6,8 +6,8 @@ import arrow.core.raise.ExperimentalRaiseAccumulateApi
 import arrow.core.raise.either
 import arrow.core.raise.ensureNotNull
 import arrow.core.raise.withError
-import es.hgg.sharexp.api.dependencies
-import es.hgg.sharexp.service.UserService
+import es.hgg.sharexp.service.CreateUserError
+import es.hgg.sharexp.service.createUser
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -27,8 +27,6 @@ enum class RegisterError {
 data class RegisterOutput(val error: RegisterError? = null)
 
 fun Route.register() = post("/register") {
-    val service: UserService by dependencies
-
     val params = call.receiveParameters()
 
     suspendTransaction {
@@ -38,7 +36,7 @@ fun Route.register() = post("/register") {
             val password = ensureNotNull(params["password"]) { RegisterError.MISSING_PARAM }
 
             withError({ it.intoRegisterError() }) {
-                service.createUser(username, email, password)
+                createUser(username, email, password)
             }
         }.fold(
             {
@@ -54,8 +52,8 @@ fun Route.register() = post("/register") {
     }
 }
 
-private fun UserService.CreateUserError.intoRegisterError() = when (this) {
-    UserService.InvalidUserName -> RegisterError.INVALID_USERNAME
-    UserService.UserExists -> RegisterError.USER_EXISTS
-    UserService.WeakPassword -> RegisterError.WEAK_PASSWORD
+private fun CreateUserError.intoRegisterError() = when (this) {
+    CreateUserError.InvalidUserName -> RegisterError.INVALID_USERNAME
+    CreateUserError.UserExists -> RegisterError.USER_EXISTS
+    CreateUserError.WeakPassword -> RegisterError.WEAK_PASSWORD
 }

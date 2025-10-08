@@ -2,11 +2,10 @@
 
 package es.hgg.sharexp.app.plugins
 
-import es.hgg.sharexp.persistence.repositories.UserRepository
+import es.hgg.sharexp.persistence.repositories.selectUserIdAndHashByEmail
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.plugins.di.*
 import io.ktor.server.response.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
@@ -30,10 +29,8 @@ fun Application.configureAuthentication() {
             passwordParamName = "password"
 
             validate { credentials ->
-                val repository: UserRepository by this@configureAuthentication.dependencies
-
                 suspendTransaction {
-                    repository.fetchIdAndHashByEmail(credentials.name)?.takeIf {
+                    selectUserIdAndHashByEmail(credentials.name)?.takeIf {
                         BCrypt.checkpw(credentials.password, it.second)
                     }?.let {
                         UserPrincipal(it.first)

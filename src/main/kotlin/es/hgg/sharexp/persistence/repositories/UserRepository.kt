@@ -9,29 +9,25 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.v1.r2dbc.select
 import java.util.*
 
-class UserRepository {
+suspend fun selectUserIdAndHashByEmail(email: String): Pair<UUID, String>? = withContext(Dispatchers.IO) {
+    Users.select(Users.id, Users.pwHash)
+        .where { Users.email eq email }
+        .map { it[Users.id] to it[Users.pwHash].decodeToString() }
+        .singleOrNull()
+}
 
-    suspend fun fetchIdAndHashByEmail(email: String): Pair<UUID, String>? = withContext(Dispatchers.IO) {
-        Users.select(Users.id, Users.pwHash)
-            .where { Users.email eq email }
-            .map { it[Users.id] to it[Users.pwHash].decodeToString() }
-            .singleOrNull()
+suspend fun insertUser(username: String, email: String, pwHash: String): UUID? = withContext(Dispatchers.IO) {
+    Users.insertReturningId(Users.id, ignoreErrors = true) {
+        it[Users.username] = username
+        it[Users.email] = email
+        it[Users.pwHash] = pwHash.toByteArray()
     }
+}
 
-    suspend fun createUser(username: String, email: String, pwHash: String): UUID? = withContext(Dispatchers.IO) {
-        Users.insertReturningId(Users.id, ignoreErrors = true) {
-            it[Users.username] = username
-            it[Users.email] = email
-            it[Users.pwHash] = pwHash.toByteArray()
-        }
-    }
-
-    suspend fun fetchUserDisplayName(userId: UUID): String? {
-        return Users.select(Users.username)
-            .where { Users.id eq userId }
-            .singleOrNull()
-            ?.get(Users.username)
-    }
-
+suspend fun selectUserDisplayName(userId: UUID): String? {
+    return Users.select(Users.username)
+        .where { Users.id eq userId }
+        .singleOrNull()
+        ?.get(Users.username)
 }
 

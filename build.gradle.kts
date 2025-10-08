@@ -9,9 +9,6 @@ version = "1.0-SNAPSHOT"
 
 kotlin {
     jvmToolchain(21)
-    compilerOptions {
-        freeCompilerArgs.add("-Xcontext-parameters")
-    }
 }
 
 repositories {
@@ -28,7 +25,6 @@ dependencies {
     implementation(libs.ktor.server.auth)
     implementation(libs.ktor.server.sessions)
     implementation(libs.ktor.server.callLogging)
-    implementation(libs.ktor.server.di)
 
     implementation(libs.ktor.serialization.kotlinx.json)
 
