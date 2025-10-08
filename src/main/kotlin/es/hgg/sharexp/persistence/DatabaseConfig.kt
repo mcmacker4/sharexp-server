@@ -1,5 +1,7 @@
 package es.hgg.sharexp.persistence
 
+import es.hgg.sharexp.persistence.tables.GroupMembers
+import es.hgg.sharexp.persistence.tables.Groups
 import es.hgg.sharexp.persistence.tables.Users
 import io.ktor.server.application.*
 import io.r2dbc.spi.ConnectionFactoryOptions
@@ -24,6 +26,6 @@ suspend fun Application.configureDatabase() {
     )
 
     suspendTransaction {
-        SchemaUtils.create(Users)
+        SchemaUtils.create(Users, Groups, GroupMembers)
     }
 }

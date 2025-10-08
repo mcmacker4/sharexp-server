@@ -1,4 +1,4 @@
-package es.hgg.sharexp.service.users
+package es.hgg.sharexp.service
 
 import arrow.core.raise.Raise
 import arrow.core.raise.ensure
@@ -6,6 +6,7 @@ import arrow.core.raise.ensureNotNull
 import es.hgg.sharexp.persistence.repositories.UserRepository
 import org.mindrot.jbcrypt.BCrypt.gensalt
 import org.mindrot.jbcrypt.BCrypt.hashpw
+import java.util.*
 
 private val ALLOWED_USERNAME_CHARS: Set<Char> = setOf('.', '_', '-')
 
@@ -44,5 +45,8 @@ class UserService(val repository: UserRepository) {
         ensure(password.any { it.isLetter() }) { WeakPassword }
         ensure(password.any { !it.isDigit() && !it.isLetter() }) { WeakPassword }
     }
+
+    suspend fun getUserDisplayName(userId: UUID): String? =
+        repository.fetchUserDisplayName(userId)
 
 }

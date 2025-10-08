@@ -1,0 +1,30 @@
+run ../common/login.http
+
+### Create group
+< {%
+    client.global.set("groupName", $random.name["title"])
+%}
+
+POST {{baseUrl}}/groups
+Content-Type: application/json
+
+{
+  "name": "{{groupName}}"
+}
+
+> {%
+    client.test("create group", () => {
+        client.assert(response.status == 200)
+    })
+    client.global.set("groupId", response.body.id)
+%}
+
+### Get group info
+GET {{baseUrl}}/groups/{{groupId}}
+
+> {%
+    client.test("group info", () => {
+        client.assert(response.status == 200, "status ok")
+        client.assert(response.body["group"].name == client.global.get("groupName"))
+    })
+%}

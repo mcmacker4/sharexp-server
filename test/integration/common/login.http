@@ -1,0 +1,12 @@
+### Login
+# @no-redirect
+POST {{baseUrl}}/auth/login
+Content-Type: application/x-www-form-urlencoded
+
+email={{testUser.email}}&password={{testUser.password}}
+
+> {%
+    client.test("login", () => {
+        client.assert(response.status == 302)
+    })
+%}

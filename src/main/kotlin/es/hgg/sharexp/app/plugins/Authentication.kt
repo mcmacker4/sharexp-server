@@ -10,6 +10,7 @@ import io.ktor.server.plugins.di.*
 import io.ktor.server.response.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
+import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import org.mindrot.jbcrypt.BCrypt
 import java.util.*
 
@@ -31,10 +32,12 @@ fun Application.configureAuthentication() {
             validate { credentials ->
                 val repository: UserRepository by this@configureAuthentication.dependencies
 
-                repository.fetchIdAndHashByEmail(credentials.name)?.takeIf {
-                    BCrypt.checkpw(credentials.password, it.second)
-                }?.let {
-                    UserPrincipal(it.first)
+                suspendTransaction {
+                    repository.fetchIdAndHashByEmail(credentials.name)?.takeIf {
+                        BCrypt.checkpw(credentials.password, it.second)
+                    }?.let {
+                        UserPrincipal(it.first)
+                    }
                 }
             }
 

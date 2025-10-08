@@ -1,0 +1,13 @@
+
+### Register with random data
+POST {{baseUrl}}/auth/register
+Content-Type: application/x-www-form-urlencoded
+
+username={{testUser.username}}&email={{testUser.email}}&password={{testUser.password}}
+
+> {%
+    client.test("registration", () => {
+        client.assert(response.status == 204, "Invalid response code")
+    })
+%}
+
