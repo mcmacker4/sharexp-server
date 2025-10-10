@@ -6,6 +6,9 @@ import io.ktor.server.routing.route
 
 fun Route.groupsApi() = route("/groups") {
     createGroup()
+
+    listGroups()
+
     route("/{groupId}") {
         fetchGroup()
     }

@@ -28,3 +28,8 @@ GET {{baseUrl}}/groups/{{groupId}}
         client.assert(response.body["group"].name == client.global.get("groupName"))
     })
 %}
+
+
+### Get list of groups
+GET {{baseUrl}}/groups
+Accept: application/json
