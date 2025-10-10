@@ -12,7 +12,7 @@ import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 fun Route.listGroups() = get {
 
     val principal = call.principal<UserPrincipal>()
-        ?: throw Exception("Must be authenticated")
+        ?: throw Exception("User must be authenticated")
 
     val groups = suspendTransaction {
         selectAllVisibleGroups(principal)

@@ -1,7 +1,7 @@
 package es.hgg.sharexp.service
 
 import es.hgg.sharexp.app.plugins.UserPrincipal
-import es.hgg.sharexp.data.GroupInfoWithMembers
+import es.hgg.sharexp.data.GroupInfo
 import es.hgg.sharexp.persistence.repositories.insertGroup
 import es.hgg.sharexp.persistence.repositories.insertGroupMember
 import es.hgg.sharexp.persistence.repositories.selectGroupById
@@ -27,6 +27,6 @@ suspend fun createGroup(groupName: String, principal: UserPrincipal): UUID = sus
 suspend fun addMember(groupId: UUID, name: String, userId: UUID? = null): UUID? =
     insertGroupMember(groupId, name, userId)
 
-suspend fun fetchGroupData(groupId: UUID, principal: UserPrincipal): GroupInfoWithMembers? {
+suspend fun fetchGroupData(groupId: UUID, principal: UserPrincipal): GroupInfo? {
     return selectGroupById(groupId, principal)
 }

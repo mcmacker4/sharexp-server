@@ -1,5 +1,6 @@
 run ../common/login.http
 
+
 ### Create group
 < {%
     client.global.set("groupName", $random.name["title"])
@@ -19,17 +20,24 @@ Content-Type: application/json
     client.global.set("groupId", response.body.id)
 %}
 
+
 ### Get group info
 GET {{baseUrl}}/groups/{{groupId}}
+Accept: application/json
 
 > {%
     client.test("group info", () => {
         client.assert(response.status == 200, "status ok")
-        client.assert(response.body["group"].name == client.global.get("groupName"))
+        client.assert(response.body["name"] == client.global.get("groupName"))
     })
 %}
 
 
 ### Get list of groups
 GET {{baseUrl}}/groups
+Accept: application/json
+
+
+### List Group Members
+GET {{baseUrl}}/groups/{{groupId}}/members
 Accept: application/json
