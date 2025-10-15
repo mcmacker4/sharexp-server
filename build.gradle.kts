@@ -11,8 +11,18 @@ kotlin {
     jvmToolchain(21)
 }
 
+application {
+    mainClass.set("io.ktor.server.netty.EngineMain")
+}
+
 repositories {
     mavenCentral()
+}
+
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-Xcontext-parameters")
+    }
 }
 
 dependencies {

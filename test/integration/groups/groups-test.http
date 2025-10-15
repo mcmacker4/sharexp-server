@@ -41,3 +41,10 @@ Accept: application/json
 ### List Group Members
 GET {{baseUrl}}/groups/{{groupId}}/members
 Accept: application/json
+
+
+### Add member
+POST {{baseUrl}}/groups/{{groupId}}/members
+Content-Type: application/json
+
+{ "name": "alt1" }

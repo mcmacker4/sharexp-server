@@ -1,7 +1,7 @@
 ktor:
   application:
     modules:
-      - es.hgg.sharexp.app.ApplicationKt.configureApplication
+      - es.hgg.sharexp.server.app.ApplicationKt.configureApplication
   deployment:
     port: $PORT:8080
 database:
