@@ -4,11 +4,7 @@ package es.hgg.sharexp.api.model
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
-import java.util.*
+import java.util.UUID
 
 @Serializable
-data class CreateGroupRequest(val name: String)
-
-@Serializable
-data class GroupInfo(val id: UUID, val name: String, val owner: UUID, val userMemberId: UUID)
-
+data class NewEntityResponse(val id: UUID)

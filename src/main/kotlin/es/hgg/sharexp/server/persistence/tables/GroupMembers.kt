@@ -5,7 +5,7 @@ import org.jetbrains.exposed.v1.core.Table
 
 object GroupMembers : Table("group_members") {
     val groupId = reference("group_id", Groups.id, onDelete = ReferenceOption.CASCADE)
-    val id = uuid("member_id").autoGenerate()
+    val id = uuid("member_id").autoGenerateV7()
 
     val name = varchar("name", 50)
     val user = reference("user", Users.id).nullable()

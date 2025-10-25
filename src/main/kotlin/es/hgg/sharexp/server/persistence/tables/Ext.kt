@@ -1,10 +1,15 @@
 package es.hgg.sharexp.server.persistence.tables
 
+import es.hgg.sharexp.server.util.UUIDv7
 import kotlinx.coroutines.flow.singleOrNull
+import org.jetbrains.exposed.v1.core.Column
 import org.jetbrains.exposed.v1.core.Expression
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.core.statements.InsertStatement
+import org.jetbrains.exposed.v1.core.statements.UpsertStatement
 import org.jetbrains.exposed.v1.r2dbc.insertReturning
+import org.jetbrains.exposed.v1.r2dbc.upsertReturning
+import java.util.*
 
 
 suspend fun <T : Table, R> T.insertReturningId(
@@ -17,4 +22,18 @@ suspend fun <T : Table, R> T.insertReturningId(
         ignoreErrors = ignoreErrors,
         body = body,
     ).singleOrNull()?.get(idColumn)
+}
+
+suspend fun <T : Table, R> T.upsertReturningId(
+    idColumn: Expression<R>,
+    body: T.(UpsertStatement<Long>) -> Unit
+): R? {
+    return upsertReturning(
+        returning = listOf(idColumn),
+        body = body,
+    ).singleOrNull()?.get(idColumn)
+}
+
+context(table: T) fun<T : Table> Column<UUID>.autoGenerateV7(): Column<UUID> = with(table) {
+    clientDefault { UUIDv7.generate() }
 }

@@ -1,11 +1,14 @@
 package es.hgg.sharexp.server.persistence
 
+import es.hgg.sharexp.server.persistence.tables.ExpenseParticipants
+import es.hgg.sharexp.server.persistence.tables.Expenses
 import es.hgg.sharexp.server.persistence.tables.GroupMembers
 import es.hgg.sharexp.server.persistence.tables.Groups
 import es.hgg.sharexp.server.persistence.tables.Users
 import io.ktor.server.application.*
 import io.r2dbc.spi.ConnectionFactoryOptions
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
+import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabaseConfig
 import org.jetbrains.exposed.v1.r2dbc.SchemaUtils
 import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 
@@ -17,7 +20,7 @@ suspend fun Application.configureDatabase() {
 
     R2dbcDatabase.connect(
         url = url,
-        databaseConfig = {
+        databaseConfig = R2dbcDatabaseConfig {
             connectionFactoryOptions {
                 user?.let { option(ConnectionFactoryOptions.USER, it) }
                 password?.let { option(ConnectionFactoryOptions.PASSWORD, it) }
@@ -26,6 +29,6 @@ suspend fun Application.configureDatabase() {
     )
 
     suspendTransaction {
-        SchemaUtils.create(Users, Groups, GroupMembers)
+        SchemaUtils.create(Users, Groups, GroupMembers, Expenses, ExpenseParticipants)
     }
 }

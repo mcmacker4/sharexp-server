@@ -6,6 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.withContext
+import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.r2dbc.select
 import java.util.*
 
@@ -24,8 +25,8 @@ suspend fun insertUser(username: String, email: String, pwHash: String): UUID? =
     }
 }
 
-suspend fun selectUserDisplayName(userId: UUID): String? {
-    return Users.select(Users.username)
+suspend fun selectUserDisplayName(userId: UUID): String? = withContext(Dispatchers.IO) {
+    Users.select(Users.username)
         .where { Users.id eq userId }
         .singleOrNull()
         ?.get(Users.username)

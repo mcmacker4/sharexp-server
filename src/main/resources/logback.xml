@@ -11,6 +11,6 @@
     <logger name="es.hgg" level="DEBUG" />
     <logger name="Exposed" level="DEBUG" />
 
-    <logger name="org.eclipse.jetty" level="INFO"/>
-    <logger name="io.netty" level="INFO"/>
+<!--    <logger name="org.eclipse.jetty" level="INFO"/>-->
+<!--    <logger name="io.netty" level="INFO"/>-->
 </configuration>

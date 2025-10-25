@@ -9,26 +9,32 @@ import es.hgg.sharexp.server.persistence.repositories.insertGroup
 import es.hgg.sharexp.server.persistence.repositories.insertGroupMember
 import es.hgg.sharexp.server.persistence.repositories.selectGroupById
 import es.hgg.sharexp.server.persistence.repositories.selectUserDisplayName
-import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.util.*
 
-suspend fun createGroup(groupName: String, principal: UserPrincipal): UUID = suspendTransaction {
+val logger: Logger = LoggerFactory.getLogger("GroupService")
+
+suspend fun Raise<AppError>.createGroup(groupName: String, principal: UserPrincipal): UUID {
     val ownerId = principal.userId
 
-    val ownerDisplayName = selectUserDisplayName(ownerId)
-        ?: throw Exception("Could not retrieve user's display name")
+    val ownerDisplayName = ensureNotNull(selectUserDisplayName(ownerId)) {
+        AppError.Internal.also { logger.error("Could not select user's display name") }
+    }
 
-    val groupId = insertGroup(groupName, principal.userId)
-        ?: throw Exception("Could not create group")
+    val groupId = ensureNotNull(insertGroup(groupName, principal.userId)) {
+        AppError.Internal.also { logger.error("Could not insert new group") }
+    }
 
-    insertGroupMember(groupId, ownerDisplayName, ownerId)
-        ?: throw Exception("Could not add owner as group member")
+    ensureNotNull(insertGroupMember(groupId, ownerDisplayName, ownerId)) {
+        AppError.Internal.also { logger.error("Could not insert owner as group member of new group") }
+    }
 
-    groupId
+    return groupId
 }
 
 suspend fun Raise<AppError>.fetchGroupData(groupId: UUID, principal: UserPrincipal): GroupInfo =
-    ensureNotNull(selectGroupById(groupId, principal).also { println(it) }) { AppError.NotFound }
+    ensureNotNull(selectGroupById(groupId, principal)) { AppError.NotFound }
 
 suspend fun Raise<AppError>.isUserOwnerOfGroup(groupId: UUID, principal: UserPrincipal): Boolean =
-    fetchGroupData(groupId, principal).owner.also { println(it) } == principal.userId
+    fetchGroupData(groupId, principal).owner.also { logger.trace("Owner of group {} is {}", groupId, it) } == principal.userId

@@ -4,7 +4,6 @@ import io.ktor.server.application.*
 import io.ktor.server.sessions.*
 import kotlin.time.Duration.Companion.days
 
-
 fun Application.configureSessions() {
     install(Sessions) {
         cookie<UserPrincipal>("sxp_session", SessionStorageMemory()) {

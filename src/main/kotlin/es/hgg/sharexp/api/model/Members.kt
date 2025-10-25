@@ -13,4 +13,4 @@ data class MemberInfo(val memberId: UUID, val name: String)
 data class AddMemberRequest(val name: String)
 
 @Serializable
-data class AddMemberResponse(val id: UUID)
+data class UpdateMemberRequest(val name: String)

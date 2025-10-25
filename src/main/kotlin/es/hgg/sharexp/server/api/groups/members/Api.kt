@@ -1,13 +1,20 @@
 package es.hgg.sharexp.server.api.groups.members
 
+import arrow.core.raise.Raise
+import es.hgg.sharexp.server.AppError
+import es.hgg.sharexp.server.api.parseUUID
 import io.ktor.server.routing.*
+import java.util.UUID
 
 
 fun Route.membersApi() = route("/members") {
-    listMembers()
-    addMember()
-    //route("/{memberId}") {
-    //    editMember()
-    //    deleteMember()
-    //}
+    getMembers()
+    postMember()
+    route("/{memberId}") {
+        putMember()
+        deleteMember()
+    }
 }
+
+context(route: RoutingContext) fun Raise<AppError>.getMemberIdParam(): UUID =
+    parseUUID(route.call.pathParameters["memberId"]) { AppError.BadRequest }

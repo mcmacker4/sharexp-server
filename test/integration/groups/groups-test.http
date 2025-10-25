@@ -30,6 +30,7 @@ Accept: application/json
         client.assert(response.status == 200, "status ok")
         client.assert(response.body["name"] == client.global.get("groupName"))
     })
+    client.global.set("memberId", response.body["userMemberId"])
 %}
 
 
@@ -48,3 +49,10 @@ POST {{baseUrl}}/groups/{{groupId}}/members
 Content-Type: application/json
 
 { "name": "alt1" }
+
+> {%
+    client.test("add member", () => {
+        client.assert(response.status === 200, "status ok")
+    })
+    client.global.set("altMemberId", response.body.id)
+%}

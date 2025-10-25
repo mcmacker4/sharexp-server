@@ -3,7 +3,7 @@ package es.hgg.sharexp.server.persistence.tables
 import org.jetbrains.exposed.v1.core.Table
 
 object Users : Table("users") {
-    val id = uuid("user_id").autoGenerate()
+    val id = uuid("user_id").autoGenerateV7()
 
     val username = varchar("user_name", 32).uniqueIndex()
     val email = varchar("email", 128).uniqueIndex()
