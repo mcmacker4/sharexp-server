@@ -13,7 +13,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
 
-val logger: Logger = LoggerFactory.getLogger("GroupService")
+private val logger: Logger = LoggerFactory.getLogger("GroupService")
 
 suspend fun Raise<AppError>.createGroup(groupName: String, principal: UserPrincipal): UUID {
     val ownerId = principal.userId

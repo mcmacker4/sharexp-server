@@ -84,3 +84,8 @@ Content-Type: application/json
         client.assert(response.status == 200, "status bad request")
     })
 %}
+
+
+### Get balances and debts
+GET {{baseUrl}}/groups/019a1ae1-bb78-76d0-bc43-3d5bcdb92793/balance
+Accept: application/json

@@ -2,6 +2,7 @@ package es.hgg.sharexp.server.api.groups
 
 import arrow.core.raise.Raise
 import es.hgg.sharexp.server.AppError
+import es.hgg.sharexp.server.api.groups.balance.balanceApi
 import es.hgg.sharexp.server.api.groups.expenses.expensesApi
 import es.hgg.sharexp.server.api.groups.members.membersApi
 import es.hgg.sharexp.server.api.parseUUID
@@ -19,6 +20,7 @@ fun Route.groupsApi() = route("/groups") {
 
         membersApi()
         expensesApi()
+        balanceApi()
     }
 }
 
