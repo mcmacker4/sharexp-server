@@ -9,6 +9,6 @@ import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 
 fun Route.getGroup() = get {
     respondEither {
-        suspendTransaction { fetchGroupData(getGroupIdParam(), call.getUserPrincipal()) }
+        suspendTransaction { fetchGroupData(call.getGroupIdParam(), call.getUserPrincipal()) }
     }
 }

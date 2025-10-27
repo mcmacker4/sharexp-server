@@ -21,7 +21,7 @@ fun Route.putExpense() = put {
         val req = call.receive<CreateExpenseRequest>()
 
         suspendTransaction {
-            createOrUpdateExpense(getGroupIdParam(), getExpenseIdParam(), req, principal)
+            createOrUpdateExpense(call.getGroupIdParam(), call.getExpenseIdParam(), req, principal)
         }
     }.fold({ error ->
         when (error) {

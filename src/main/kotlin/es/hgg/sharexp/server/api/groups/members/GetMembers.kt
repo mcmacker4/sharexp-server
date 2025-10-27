@@ -13,7 +13,7 @@ import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 fun Route.getMembers() = get {
     respondEither {
         val members = suspendTransaction {
-            fetchGroupMembers(getGroupIdParam(), call.getUserPrincipal())
+            fetchGroupMembers(call.getGroupIdParam(), call.getUserPrincipal())
         }
         ensureNotNull(members) { AppError.NotFound }
     }

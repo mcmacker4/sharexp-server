@@ -24,5 +24,5 @@ fun Route.groupsApi() = route("/groups") {
     }
 }
 
-context(route: RoutingContext) fun Raise<AppError>.getGroupIdParam(): UUID =
-    parseUUID(route.call.pathParameters["groupId"]) { AppError.BadRequest }
+context(raise: Raise<AppError>) fun RoutingCall.getGroupIdParam(): UUID =
+    raise.parseUUID(pathParameters["groupId"]) { AppError.BadRequest }

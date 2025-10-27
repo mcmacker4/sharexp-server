@@ -21,7 +21,7 @@ fun Route.postExpense() = post {
         val req = call.receive<CreateExpenseRequest>()
 
         val expenseId = suspendTransaction {
-            createOrUpdateExpense(getGroupIdParam(), null, req, principal)
+            createOrUpdateExpense(call.getGroupIdParam(), null, req, principal)
         }
 
         NewEntityResponse(expenseId)
@@ -35,19 +35,3 @@ fun Route.postExpense() = post {
         }
     }, { call.respond(it) })
 }
-
-/*
-
-suspendTransaction {
-
-    val users = withContext(Dispatchers.IO) {
-        // Select users using exposed
-    }
-
-    withContext(Dispatchers.IO) {
-        // Update some other table using exposed
-    }
-
-}
-
- */

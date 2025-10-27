@@ -11,6 +11,6 @@ import io.ktor.server.routing.*
 fun Route.putMember() = put {
     respondIfError {
         val data = call.receive<UpdateMemberRequest>()
-        modifyMember(getGroupIdParam(), getMemberIdParam(), data, call.getUserPrincipal())
+        modifyMember(call.getGroupIdParam(), call.getMemberIdParam(), data, call.getUserPrincipal())
     }
 }

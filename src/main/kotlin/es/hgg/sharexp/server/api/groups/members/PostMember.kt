@@ -16,7 +16,7 @@ fun Route.postMember() = post {
 
     respondEither {
         val input = call.receive<AddMemberRequest>()
-        val id = suspendTransaction { addMemberToGroup(getGroupIdParam(), input, principal) }
+        val id = suspendTransaction { addMemberToGroup(call.getGroupIdParam(), input, principal) }
         NewEntityResponse(id)
     }
 }

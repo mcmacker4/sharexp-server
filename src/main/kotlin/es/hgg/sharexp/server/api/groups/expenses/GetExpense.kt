@@ -12,8 +12,8 @@ fun Route.getExpense() = get {
     val principal = call.getUserPrincipal()
 
     respondEither {
-        val groupId = getGroupIdParam()
-        val expenseId = getExpenseIdParam()
+        val groupId = call.getGroupIdParam()
+        val expenseId = call.getExpenseIdParam()
 
         suspendTransaction { fetchGroupExpense(groupId, expenseId, principal) }
     }

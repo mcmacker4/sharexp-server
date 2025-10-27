@@ -16,5 +16,5 @@ fun Route.membersApi() = route("/members") {
     }
 }
 
-context(route: RoutingContext) fun Raise<AppError>.getMemberIdParam(): UUID =
-    parseUUID(route.call.pathParameters["memberId"]) { AppError.BadRequest }
+context(raise: Raise<AppError>) fun RoutingCall.getMemberIdParam(): UUID =
+    raise.parseUUID(pathParameters["memberId"]) { AppError.BadRequest }

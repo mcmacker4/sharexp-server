@@ -11,7 +11,7 @@ import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 fun Route.getExpenses() = get {
     val principal = call.getUserPrincipal()
     respondEither {
-        val groupId = getGroupIdParam()
+        val groupId = call.getGroupIdParam()
 
         suspendTransaction { fetchGroupExpenses(groupId, principal) }
     }

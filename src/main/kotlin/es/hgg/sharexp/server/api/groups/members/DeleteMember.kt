@@ -9,6 +9,6 @@ import io.ktor.server.routing.*
 
 fun Route.deleteMember() = delete {
     respondIfError {
-        removeMember(getGroupIdParam(), getMemberIdParam(), call.getUserPrincipal())
+        removeMember(call.getGroupIdParam(), call.getMemberIdParam(), call.getUserPrincipal())
     }
 }
