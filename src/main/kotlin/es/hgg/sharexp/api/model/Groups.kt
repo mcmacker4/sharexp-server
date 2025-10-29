@@ -12,3 +12,6 @@ data class CreateGroupRequest(val name: String)
 @Serializable
 data class GroupInfo(val id: UUID, val name: String, val owner: UUID, val userMemberId: UUID)
 
+@Serializable
+enum class GroupSort { CREATED, MODIFIED }
+

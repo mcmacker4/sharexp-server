@@ -6,6 +6,7 @@ import arrow.core.raise.ensureNotNull
 import es.hgg.sharexp.api.model.CreateExpenseRequest
 import es.hgg.sharexp.api.model.ExpenseInfo
 import es.hgg.sharexp.api.model.ExpenseListItem
+import es.hgg.sharexp.api.model.ExpenseSort
 import es.hgg.sharexp.server.AppError
 import es.hgg.sharexp.server.ExpenseError
 import es.hgg.sharexp.server.app.plugins.UserPrincipal
@@ -13,6 +14,8 @@ import es.hgg.sharexp.server.persistence.repositories.upsertExpense
 import es.hgg.sharexp.server.persistence.repositories.selectExpense
 import es.hgg.sharexp.server.persistence.repositories.selectExpensesList
 import es.hgg.sharexp.server.persistence.repositories.selectGroupMembers
+import es.hgg.sharexp.server.persistence.repositories.updateGroupActivityTimestamp
+import es.hgg.sharexp.server.util.PageRequest
 import java.util.*
 
 
@@ -32,11 +35,12 @@ suspend fun Raise<AppError>.createOrUpdateExpense(groupId: UUID, expenseId: UUID
     val computedAmounts = expenseSolver.solve(data.paidBy, data.amount, data.participants)
 
     return ensureNotNull(upsertExpense(groupId, expenseId, data, computedAmounts)) { AppError.Internal }
+        .also { updateGroupActivityTimestamp(groupId) }
 }
 
-suspend fun Raise<AppError>.fetchGroupExpenses(groupId: UUID, principal: UserPrincipal): List<ExpenseListItem> {
+suspend fun Raise<AppError>.fetchGroupExpenses(groupId: UUID, pageRequest: PageRequest<ExpenseSort>, principal: UserPrincipal): List<ExpenseListItem> {
     ensureUserIsGroupMember(groupId, principal) { AppError.NotFound }
-    return selectExpensesList(groupId, principal)
+    return selectExpensesList(groupId, pageRequest, principal)
 }
 
 suspend fun Raise<AppError>.fetchGroupExpense(groupId: UUID, expenseId: UUID, principal: UserPrincipal): ExpenseInfo {

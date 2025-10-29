@@ -46,3 +46,6 @@ data class CreateExpenseError (
     val message: String,
     val affectedMembers: Set<UUID>?
 )
+
+@Serializable
+enum class ExpenseSort { CREATED, MODIFIED, AMOUNT }

@@ -3,14 +3,19 @@ package es.hgg.sharexp.server.persistence.tables
 import es.hgg.sharexp.api.model.SplitMethod
 import org.jetbrains.exposed.v1.core.ReferenceOption
 import org.jetbrains.exposed.v1.core.Table
+import org.jetbrains.exposed.v1.datetime.timestamp
+import kotlin.time.ExperimentalTime
 
-
+@OptIn(ExperimentalTime::class)
 object Expenses : Table("expenses") {
     val groupId = reference("group_id", Groups.id, onDelete = ReferenceOption.CASCADE)
     val id = uuid("expense_id").autoGenerateV7()
 
     val title = varchar("title", 64)
     val description = varchar("description", 256).nullable()
+
+    val createdAt = timestamp("created_at")
+    val modifiedAt = timestamp("modified_at")
 
     val paidBy = registerColumn("paid_by", GroupMembers.id.columnType)
 

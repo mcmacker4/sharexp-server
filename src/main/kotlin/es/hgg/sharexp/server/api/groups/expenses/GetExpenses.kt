@@ -1,5 +1,7 @@
 package es.hgg.sharexp.server.api.groups.expenses
 
+import es.hgg.sharexp.api.model.ExpenseSort
+import es.hgg.sharexp.server.api.getPageRequest
 import es.hgg.sharexp.server.api.getUserPrincipal
 import es.hgg.sharexp.server.api.groups.getGroupIdParam
 import es.hgg.sharexp.server.api.respondEither
@@ -12,7 +14,7 @@ fun Route.getExpenses() = get {
     val principal = call.getUserPrincipal()
     respondEither {
         val groupId = call.getGroupIdParam()
-
-        suspendTransaction { fetchGroupExpenses(groupId, principal) }
+        val page = call.getPageRequest(ExpenseSort.CREATED)
+        suspendTransaction { fetchGroupExpenses(groupId, page, principal) }
     }
 }

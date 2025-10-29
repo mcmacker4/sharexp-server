@@ -1,5 +1,7 @@
 package es.hgg.sharexp.server.api.groups
 
+import es.hgg.sharexp.api.model.GroupSort
+import es.hgg.sharexp.server.api.getPageRequest
 import es.hgg.sharexp.server.api.getUserPrincipal
 import es.hgg.sharexp.server.persistence.repositories.selectAllVisibleGroups
 import io.ktor.server.response.*
@@ -11,7 +13,8 @@ fun Route.getGroups() = get {
     val principal = call.getUserPrincipal()
 
     val groups = suspendTransaction {
-        selectAllVisibleGroups(principal)
+        val page = call.getPageRequest(GroupSort.MODIFIED)
+        selectAllVisibleGroups(page, principal)
     }
 
     call.respond(groups)

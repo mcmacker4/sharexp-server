@@ -40,6 +40,7 @@ dependencies {
 
     implementation(libs.exposed.core)
     implementation(libs.exposed.r2dbc)
+    implementation(libs.exposed.datetime)
     implementation(libs.r2dbc.mariadb)
 
     implementation(libs.bcrypt)

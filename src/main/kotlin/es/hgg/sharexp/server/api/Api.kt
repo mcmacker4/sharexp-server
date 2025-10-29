@@ -8,6 +8,7 @@ import es.hgg.sharexp.server.AppError
 import es.hgg.sharexp.server.api.auth.authentication
 import es.hgg.sharexp.server.api.groups.groupsApi
 import es.hgg.sharexp.server.app.plugins.UserPrincipal
+import es.hgg.sharexp.server.util.PageRequest
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -38,3 +39,10 @@ suspend inline fun<reified T> RoutingContext.respondEither(block: Raise<AppError
 
 fun ApplicationCall.getUserPrincipal(): UserPrincipal =
     principal<UserPrincipal>() ?: throw Exception("User must be authenticated")
+
+inline fun<reified S : Enum<S>> RoutingCall.getPageRequest(defaultSort: S, defaultPage: Int = 1, defaultSize: Int = 10, ascending: Boolean = false): PageRequest<S> = PageRequest(
+    queryParameters["page"]?.toIntOrNull() ?: defaultPage,
+    queryParameters["size"]?.toIntOrNull() ?: defaultSize,
+    queryParameters["sort"]?.let { runCatching { enumValueOf<S>(it) }.getOrNull() } ?: defaultSort,
+    queryParameters["asc"]?.toBooleanStrict() ?: ascending,
+)
