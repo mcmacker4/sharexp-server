@@ -1,56 +1,12 @@
 plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.ktor)
-    alias(libs.plugins.kotlin.serialization)
-}
-
-group = "es.hgg"
-version = "1.0-SNAPSHOT"
-
-kotlin {
-    jvmToolchain(21)
-}
-
-application {
-    mainClass.set("io.ktor.server.netty.EngineMain")
-}
-
-repositories {
-    mavenCentral()
-}
-
-kotlin {
-    compilerOptions {
-        freeCompilerArgs.add("-Xcontext-parameters")
-    }
-}
-
-dependencies {
-    implementation(libs.arrow.core)
-
-    implementation(libs.ktor.server.core)
-    implementation(libs.ktor.server.netty)
-    implementation(libs.ktor.server.config.yaml)
-    implementation(libs.ktor.server.content.negotiation)
-    implementation(libs.ktor.server.auth)
-    implementation(libs.ktor.server.sessions)
-    implementation(libs.ktor.server.callLogging)
-
-    implementation(libs.ktor.serialization.kotlinx.json)
-
-    implementation(libs.exposed.core)
-    implementation(libs.exposed.r2dbc)
-    implementation(libs.exposed.datetime)
-    implementation(libs.r2dbc.mariadb)
-
-    implementation(libs.bcrypt)
-
-    implementation(libs.logback.classic)
-
-    testImplementation(libs.kotlin.test)
-    testImplementation(libs.ktor.server.test.host)
-}
-
-tasks.test {
-    useJUnitPlatform()
+    // this is necessary to avoid the plugins to be loaded multiple times
+    // in each subproject's classloader
+    alias(libs.plugins.androidApplication) apply false
+    alias(libs.plugins.androidLibrary) apply false
+    alias(libs.plugins.composeMultiplatform) apply false
+    alias(libs.plugins.composeCompiler) apply false
+    alias(libs.plugins.composeHotReload) apply false
+    alias(libs.plugins.kotlinJvm) apply false
+    alias(libs.plugins.kotlinMultiplatform) apply false
+    alias(libs.plugins.ktor) apply false
 }
