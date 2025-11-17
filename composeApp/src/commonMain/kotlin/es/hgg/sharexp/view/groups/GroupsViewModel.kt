@@ -1,20 +1,13 @@
 package es.hgg.sharexp.view.groups
 
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlin.collections.emptyList
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import es.hgg.sharexp.service.GroupsPagingSource
+import es.hgg.sharexp.service.GroupsService
 
-class GroupsViewModel : ViewModel() {
+class GroupsViewModel(val service: GroupsService) : ViewModel() {
 
-    private val groups = MutableStateFlow<MutableList<String>>(mutableListOf())
-    val state: StateFlow<List<String>> = groups.asStateFlow()
-
-    fun updateGroups() {
-        groups.update { it.apply { add("Hello") } }
-    }
+    val groupsPager = Pager(PagingConfig(pageSize = 20)) { GroupsPagingSource(service) }
 
 }

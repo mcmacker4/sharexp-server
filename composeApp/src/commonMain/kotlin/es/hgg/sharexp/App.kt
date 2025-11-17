@@ -9,8 +9,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import es.hgg.sharexp.ui.theme.SharexpTheme
 import es.hgg.sharexp.view.Route
-import es.hgg.sharexp.view.groups.GroupsView
-import es.hgg.sharexp.view.landing.LandingView
+import es.hgg.sharexp.view.groups.GroupsPage
+import es.hgg.sharexp.view.landing.LandingPage
 import es.hgg.sharexp.view.login.LoginPage
 import es.hgg.sharexp.view.register.RegisterPage
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -29,7 +29,7 @@ fun App() {
                 startDestination = Route.LandingPage,
             ) {
                 composable<Route.LandingPage> {
-                    LandingView(
+                    LandingPage(
                         onLoggedIn = {
                             controller.navigate(Route.GroupsPage) {
                                 popUpTo<Route.LandingPage> { inclusive = true }
@@ -62,7 +62,9 @@ fun App() {
                 }
 
                 composable<Route.GroupsPage> {
-                    GroupsView()
+                    GroupsPage(
+                        onNewGroupRequest = {}
+                    )
                 }
             }
         }

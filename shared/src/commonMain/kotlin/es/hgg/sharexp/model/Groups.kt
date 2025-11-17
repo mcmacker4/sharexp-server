@@ -1,7 +1,6 @@
 package es.hgg.sharexp.model
 
 import kotlinx.serialization.Serializable
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 @Serializable

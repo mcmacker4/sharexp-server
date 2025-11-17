@@ -1,8 +1,10 @@
 package es.hgg.sharexp.util
 
-expect class AppLog(name: String?) {
+interface AppLog {
     fun debug(msg: String)
     fun info(msg: String)
     fun warn(msg: String)
     fun error(msg: String)
 }
+
+expect fun AppLog(name: String): AppLog

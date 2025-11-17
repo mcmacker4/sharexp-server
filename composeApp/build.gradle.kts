@@ -17,6 +17,7 @@ kotlin {
     }
 
     compilerOptions {
+        freeCompilerArgs.add("-opt-in=kotlin.uuid.ExperimentalUuidApi")
         freeCompilerArgs.add("-Xcontext-parameters")
     }
     
@@ -33,8 +34,10 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             implementation(compose.preview)
-            implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
+
+            implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.paging.runtime)
 
             implementation(libs.ktor.client.android)
         }
@@ -54,6 +57,7 @@ kotlin {
 
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.androidx.paging.compose)
 
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
@@ -62,6 +66,7 @@ kotlin {
 
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.contentNegotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

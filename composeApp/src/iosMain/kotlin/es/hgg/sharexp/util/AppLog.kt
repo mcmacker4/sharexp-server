@@ -1,8 +1,10 @@
 package es.hgg.sharexp.util
 
-actual class AppLog actual constructor(name: String?) {
-    actual fun debug(msg: String) {}
-    actual fun info(msg: String) {}
-    actual fun warn(msg: String) {}
-    actual fun error(msg: String) {}
+class IOSAppLog(name: String?) : AppLog {
+    override fun debug(msg: String) = TODO()
+    override fun info(msg: String) = TODO()
+    override fun warn(msg: String) = TODO()
+    override fun error(msg: String) = TODO()
 }
+
+actual fun AppLog(name: String): AppLog = IOSAppLog(name)

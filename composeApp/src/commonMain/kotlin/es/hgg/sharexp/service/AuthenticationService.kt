@@ -36,8 +36,7 @@ class AuthenticationService(
 ) {
 
     suspend fun fetchAuthStatus(): Either<LoginError, Unit> = either {
-        val base = getString(Res.string.api_base_url)
-        client.get("$base/auth/status").raiseLoginError()
+        client.get("${getBaseUrl()}/auth/status").raiseLoginError()
     }
 
     suspend fun login(email: String, password: String): Either<LoginError, Unit> = either {
