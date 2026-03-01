@@ -6,22 +6,25 @@ import es.hgg.sharexp.api.model.CreateExpenseRequest
 import es.hgg.sharexp.server.ExpenseError
 import es.hgg.sharexp.server.api.getUserPrincipal
 import es.hgg.sharexp.server.api.groups.getGroupIdParam
-import es.hgg.sharexp.server.service.createOrUpdateExpense
+import es.hgg.sharexp.server.service.GroupExpenseService
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
+import org.koin.ktor.ext.inject
 
 
 fun Route.putExpense() = put {
     val principal = call.getUserPrincipal()
 
+    val service by inject<GroupExpenseService>()
+
     either {
         val req = call.receive<CreateExpenseRequest>()
 
         suspendTransaction {
-            createOrUpdateExpense(call.getGroupIdParam(), call.getExpenseIdParam(), req, principal)
+            service.createOrUpdateExpense(call.getGroupIdParam(), call.getExpenseIdParam(), req, principal)
         }
     }.fold({ error ->
         when (error) {
@@ -29,7 +32,9 @@ fun Route.putExpense() = put {
                 error.status,
                 CreateExpenseError(error.message, error.affectedParticipants)
             )
+
             else -> call.respond(error.status)
+
         }
     }, { call.respond(HttpStatusCode.OK) })
 }

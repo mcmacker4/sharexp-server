@@ -5,9 +5,9 @@ import es.hgg.sharexp.server.AppError
 import es.hgg.sharexp.server.api.groups.balance.balanceApi
 import es.hgg.sharexp.server.api.groups.expenses.expensesApi
 import es.hgg.sharexp.server.api.groups.members.membersApi
-import es.hgg.sharexp.server.api.parseUUID
+import es.hgg.sharexp.server.api.parseUuid
 import io.ktor.server.routing.*
-import java.util.UUID
+import kotlin.uuid.Uuid
 
 
 fun Route.groupsApi() = route("/groups") {
@@ -24,5 +24,5 @@ fun Route.groupsApi() = route("/groups") {
     }
 }
 
-context(raise: Raise<AppError>) fun RoutingCall.getGroupIdParam(): UUID =
-    raise.parseUUID(pathParameters["groupId"]) { AppError.BadRequest }
+context(raise: Raise<AppError>) fun RoutingCall.getGroupIdParam(): Uuid =
+    raise.parseUuid(pathParameters["groupId"]) { AppError.BadRequest }

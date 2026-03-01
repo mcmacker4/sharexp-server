@@ -1,10 +1,6 @@
 package es.hgg.sharexp.server.persistence
 
-import es.hgg.sharexp.server.persistence.tables.ExpenseParticipants
-import es.hgg.sharexp.server.persistence.tables.Expenses
-import es.hgg.sharexp.server.persistence.tables.GroupMembers
-import es.hgg.sharexp.server.persistence.tables.Groups
-import es.hgg.sharexp.server.persistence.tables.Users
+import es.hgg.sharexp.server.persistence.tables.*
 import io.ktor.server.application.*
 import io.r2dbc.spi.ConnectionFactoryOptions
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase

@@ -3,11 +3,10 @@ package es.hgg.sharexp.server.persistence.tables
 import org.jetbrains.exposed.v1.core.ReferenceOption
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.datetime.timestamp
-import kotlin.time.ExperimentalTime
+import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalTime::class)
 object Groups : Table("groups") {
-    val id = uuid("group_id").autoGenerateV7()
+    val id = uuid("group_id").clientDefault { Uuid.generateV7() }
 
     val name = varchar("name", 50)
     val owner = reference("owner", Users.id, onDelete = ReferenceOption.RESTRICT, onUpdate = ReferenceOption.CASCADE)

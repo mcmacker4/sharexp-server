@@ -3,38 +3,59 @@ package es.hgg.sharexp.server.service
 import arrow.core.raise.Raise
 import arrow.core.raise.ensureNotNull
 import es.hgg.sharexp.api.model.GroupInfo
+import es.hgg.sharexp.api.model.GroupSort
 import es.hgg.sharexp.server.AppError
 import es.hgg.sharexp.server.app.plugins.UserPrincipal
-import es.hgg.sharexp.server.persistence.repositories.insertGroup
-import es.hgg.sharexp.server.persistence.repositories.insertGroupMember
-import es.hgg.sharexp.server.persistence.repositories.selectGroupById
-import es.hgg.sharexp.server.persistence.repositories.selectUserDisplayName
+import es.hgg.sharexp.server.persistence.repositories.GroupMemberRepository
+import es.hgg.sharexp.server.persistence.repositories.GroupRepository
+import es.hgg.sharexp.server.persistence.repositories.UserRepository
+import es.hgg.sharexp.server.util.PageRequest
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.*
+import kotlin.uuid.Uuid
 
-private val logger: Logger = LoggerFactory.getLogger("GroupService")
+class GroupService(
+    val groupRepo: GroupRepository,
+    val memberRepo: GroupMemberRepository,
+    val userRepo: UserRepository,
+) {
 
-suspend fun Raise<AppError>.createGroup(groupName: String, principal: UserPrincipal): UUID {
-    val ownerId = principal.userId
+    private val logger: Logger = LoggerFactory.getLogger("GroupService")
 
-    val ownerDisplayName = ensureNotNull(selectUserDisplayName(ownerId)) {
-        AppError.Internal.also { logger.error("Could not select user's display name") }
+    context(raise: Raise<AppError>)
+    suspend fun createGroup(groupName: String, principal: UserPrincipal): Uuid = with(raise) {
+        val ownerId = principal.userId
+
+        val ownerDisplayName = ensureNotNull(userRepo.selectUserDisplayName(ownerId)) {
+            AppError.Internal.also { logger.error("Could not select user's display name") }
+        }
+
+        val groupId = ensureNotNull(groupRepo.insertGroup(groupName, principal.userId)) {
+            AppError.Internal.also { logger.error("Could not insert new group") }
+        }
+
+        ensureNotNull(memberRepo.insertGroupMember(groupId, ownerDisplayName, ownerId)) {
+            AppError.Internal.also { logger.error("Could not insert owner as group member of new group") }
+        }
+
+        return groupId
     }
 
-    val groupId = ensureNotNull(insertGroup(groupName, principal.userId)) {
-        AppError.Internal.also { logger.error("Could not insert new group") }
+    suspend fun fetchAllVisibleGroups(
+        pageRequest: PageRequest<GroupSort>,
+        principal: UserPrincipal
+    ): List<GroupInfo> = groupRepo.selectAllVisibleGroups(pageRequest, principal)
+
+    context(raise: Raise<AppError>)
+    suspend fun fetchGroupData(groupId: Uuid, principal: UserPrincipal): GroupInfo = with(raise) {
+        ensureNotNull(groupRepo.selectGroupById(groupId, principal)) { AppError.NotFound }
     }
 
-    ensureNotNull(insertGroupMember(groupId, ownerDisplayName, ownerId)) {
-        AppError.Internal.also { logger.error("Could not insert owner as group member of new group") }
+    context(raise: Raise<AppError>)
+    suspend fun isUserOwnerOfGroup(groupId: Uuid, principal: UserPrincipal): Boolean = with(raise) {
+        val owner = fetchGroupData(groupId, principal).owner
+        logger.trace("Owner of group {} is {}", groupId, owner)
+        return owner == principal.userId
     }
 
-    return groupId
 }
-
-suspend fun Raise<AppError>.fetchGroupData(groupId: UUID, principal: UserPrincipal): GroupInfo =
-    ensureNotNull(selectGroupById(groupId, principal)) { AppError.NotFound }
-
-suspend fun Raise<AppError>.isUserOwnerOfGroup(groupId: UUID, principal: UserPrincipal): Boolean =
-    fetchGroupData(groupId, principal).owner.also { logger.trace("Owner of group {} is {}", groupId, it) } == principal.userId

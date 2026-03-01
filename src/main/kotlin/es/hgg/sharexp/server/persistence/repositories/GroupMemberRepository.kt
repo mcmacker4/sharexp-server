@@ -13,46 +13,57 @@ import org.jetbrains.exposed.v1.r2dbc.deleteWhere
 import org.jetbrains.exposed.v1.r2dbc.select
 import org.jetbrains.exposed.v1.r2dbc.selectAll
 import org.jetbrains.exposed.v1.r2dbc.update
-import java.util.*
+import kotlin.uuid.Uuid
 
 
-suspend fun selectGroupMembers(groupId: UUID, userId: UUID): List<MemberInfo> {
-    val m1 = GroupMembers.alias("m1")
-    val m2 = GroupMembers.alias("m2")
+class GroupMemberRepository {
 
-    val query = m1.join(m2, JoinType.INNER, m1[GroupMembers.groupId], m2[GroupMembers.groupId], additionalConstraint = { m2[GroupMembers.user] eq userId })
-        .select(m1[GroupMembers.id], m1[GroupMembers.name])
-        .where { m1[GroupMembers.groupId] eq groupId }
-        .map { it.intoMemberInfo(m1) }
+    suspend fun selectGroupMembers(groupId: Uuid, userId: Uuid): List<MemberInfo> {
+        val m1 = GroupMembers.alias("m1")
+        val m2 = GroupMembers.alias("m2")
 
-    return withContext(Dispatchers.IO) { query.toList() }
-}
+        val query = m1.join(
+            m2,
+            JoinType.INNER,
+            m1[GroupMembers.groupId],
+            m2[GroupMembers.groupId],
+            additionalConstraint = { m2[GroupMembers.user] eq userId })
+            .select(m1[GroupMembers.id], m1[GroupMembers.name])
+            .where { m1[GroupMembers.groupId] eq groupId }
+            .map { it.intoMemberInfo(m1) }
 
-private fun ResultRow.intoMemberInfo(alias: Alias<GroupMembers>) =
-    MemberInfo(this[alias[GroupMembers.id]], this[alias[GroupMembers.name]])
-
-suspend fun insertGroupMember(groupId: UUID, name: String, userId: UUID? = null): UUID? = withContext(Dispatchers.IO) {
-    GroupMembers.insertReturningId(GroupMembers.id, ignoreErrors = true) {
-        it[GroupMembers.groupId] = groupId
-        it[GroupMembers.name] = name
-        it[GroupMembers.user] = userId
+        return withContext(Dispatchers.IO) { query.toList() }
     }
-}
 
-suspend fun deleteFromMembers(groupId: UUID, memberId: UUID): Boolean = withContext(Dispatchers.IO) {
-    GroupMembers.deleteWhere {
-        (GroupMembers.groupId eq groupId) and (GroupMembers.id eq memberId)
-    } > 0
-}
+    private fun ResultRow.intoMemberInfo(alias: Alias<GroupMembers>) =
+        MemberInfo(this[alias[GroupMembers.id]], this[alias[GroupMembers.name]])
 
-suspend fun updateMember(groupId: UUID, memberId: UUID, data: UpdateMemberRequest): Boolean = withContext(Dispatchers.IO) {
-    GroupMembers.update({ (GroupMembers.groupId eq groupId) and (GroupMembers.id eq memberId) }, limit = 1) {
-        it[GroupMembers.name] = data.name
-    } > 0
-}
+    suspend fun insertGroupMember(groupId: Uuid, name: String, userId: Uuid? = null): Uuid? =
+        withContext(Dispatchers.IO) {
+            GroupMembers.insertReturningId(GroupMembers.id, ignoreErrors = true) {
+                it[GroupMembers.groupId] = groupId
+                it[GroupMembers.name] = name
+                it[GroupMembers.user] = userId
+            }
+        }
 
-suspend fun isUserMemberOfGroup(userId: UUID, groupId: UUID): Boolean = withContext(Dispatchers.IO) {
-    GroupMembers.selectAll()
-        .where { (GroupMembers.groupId eq groupId) and (GroupMembers.user eq userId) }
-        .count() > 0
+    suspend fun deleteFromMembers(groupId: Uuid, memberId: Uuid): Boolean = withContext(Dispatchers.IO) {
+        GroupMembers.deleteWhere {
+            (GroupMembers.groupId eq groupId) and (GroupMembers.id eq memberId)
+        } > 0
+    }
+
+    suspend fun updateMember(groupId: Uuid, memberId: Uuid, data: UpdateMemberRequest): Boolean =
+        withContext(Dispatchers.IO) {
+            GroupMembers.update({ (GroupMembers.groupId eq groupId) and (GroupMembers.id eq memberId) }, limit = 1) {
+                it[GroupMembers.name] = data.name
+            } > 0
+        }
+
+    suspend fun isUserMemberOfGroup(userId: Uuid, groupId: Uuid): Boolean = withContext(Dispatchers.IO) {
+        GroupMembers.selectAll()
+            .where { (GroupMembers.groupId eq groupId) and (GroupMembers.user eq userId) }
+            .count() > 0
+    }
+
 }

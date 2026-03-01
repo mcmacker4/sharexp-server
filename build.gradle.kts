@@ -22,6 +22,8 @@ repositories {
 kotlin {
     compilerOptions {
         freeCompilerArgs.add("-Xcontext-parameters")
+        freeCompilerArgs.add("-opt-in=kotlin.time.ExperimentalTime")
+        freeCompilerArgs.add("-opt-in=kotlin.uuid.ExperimentalUuidApi")
     }
 }
 
@@ -42,13 +44,15 @@ dependencies {
     implementation(libs.exposed.r2dbc)
     implementation(libs.exposed.datetime)
     implementation(libs.r2dbc.mariadb)
+    implementation(libs.r2dbc.postgres)
 
     implementation(libs.bcrypt)
 
     implementation(libs.logback.classic)
+    implementation(libs.koin.ktor)
+    implementation(libs.koin.slf4j)
 
     testImplementation(libs.kotlin.test)
-    testImplementation(libs.ktor.server.test.host)
 }
 
 tasks.test {

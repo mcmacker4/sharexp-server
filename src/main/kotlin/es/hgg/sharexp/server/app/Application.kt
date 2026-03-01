@@ -15,6 +15,7 @@ fun main(args: Array<String>) {
 
 suspend fun Application.configureApplication() {
     configureDatabase()
+    configureKoin()
     configurePlugins()
     configureApi()
 }

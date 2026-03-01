@@ -1,16 +1,13 @@
-@file:UseSerializers(UUIDSerializer::class)
-
 package es.hgg.sharexp.api.model
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.UseSerializers
-import java.util.*
+import kotlin.uuid.Uuid
 
 @Serializable
 data class CreateGroupRequest(val name: String)
 
 @Serializable
-data class GroupInfo(val id: UUID, val name: String, val owner: UUID, val userMemberId: UUID)
+data class GroupInfo(val id: Uuid, val name: String, val owner: Uuid, val userMemberId: Uuid)
 
 @Serializable
 enum class GroupSort { CREATED, MODIFIED }

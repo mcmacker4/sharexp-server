@@ -2,9 +2,9 @@ package es.hgg.sharexp.server.api.groups.members
 
 import arrow.core.raise.Raise
 import es.hgg.sharexp.server.AppError
-import es.hgg.sharexp.server.api.parseUUID
+import es.hgg.sharexp.server.api.parseUuid
 import io.ktor.server.routing.*
-import java.util.UUID
+import kotlin.uuid.Uuid
 
 
 fun Route.membersApi() = route("/members") {
@@ -16,5 +16,5 @@ fun Route.membersApi() = route("/members") {
     }
 }
 
-context(raise: Raise<AppError>) fun RoutingCall.getMemberIdParam(): UUID =
-    raise.parseUUID(pathParameters["memberId"]) { AppError.BadRequest }
+context(raise: Raise<AppError>) fun RoutingCall.getMemberIdParam(): Uuid =
+    raise.parseUuid(pathParameters["memberId"]) { AppError.BadRequest }

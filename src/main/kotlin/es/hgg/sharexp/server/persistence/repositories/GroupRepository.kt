@@ -16,66 +16,67 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.r2dbc.select
 import org.jetbrains.exposed.v1.r2dbc.update
-import java.util.*
 import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
+import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalTime::class)
-suspend fun insertGroup(name: String, owner: UUID): UUID? = withContext(Dispatchers.IO) {
-    val now = Clock.System.now()
+class GroupRepository {
 
-    Groups.insertReturningId(Groups.id) {
-        it[Groups.name] = name
-        it[Groups.owner] = owner
-        it[Groups.createdAt] = now
-        it[Groups.lastActivityAt] = now
+    suspend fun insertGroup(name: String, owner: Uuid): Uuid? = withContext(Dispatchers.IO) {
+        val now = Clock.System.now()
+
+        Groups.insertReturningId(Groups.id) {
+            it[Groups.name] = name
+            it[Groups.owner] = owner
+            it[Groups.createdAt] = now
+            it[Groups.lastActivityAt] = now
+        }
     }
-}
 
-suspend fun selectGroupById(groupId: UUID, principal: UserPrincipal): GroupInfo? {
-    return withContext(Dispatchers.IO) {
-        joinGroupsAndMembers { GroupMembers.user eq principal.userId }
-            .select(Groups.id, Groups.name, Groups.owner, GroupMembers.id)
-            .where { (Groups.id eq groupId) }
-            .map { it.intoGroupInfo() }
-            .singleOrNull()
+    suspend fun selectGroupById(groupId: Uuid, principal: UserPrincipal): GroupInfo? {
+        return withContext(Dispatchers.IO) {
+            joinGroupsAndMembers { GroupMembers.user eq principal.userId }
+                .select(Groups.id, Groups.name, Groups.owner, GroupMembers.id)
+                .where { (Groups.id eq groupId) }
+                .map { it.intoGroupInfo() }
+                .singleOrNull()
+        }
     }
-}
 
-suspend fun selectAllVisibleGroups(pageRequest: PageRequest<GroupSort>, principal: UserPrincipal): List<GroupInfo> {
-    return withContext(Dispatchers.IO) {
-        joinGroupsAndMembers { GroupMembers.user eq principal.userId }
-            .select(Groups.id, Groups.name, Groups.owner, GroupMembers.id)
-            .page(pageRequest) { it.toSortColumn() }
-            .map { it.intoGroupInfo() }
-            .toList()
+    suspend fun selectAllVisibleGroups(pageRequest: PageRequest<GroupSort>, principal: UserPrincipal): List<GroupInfo> {
+        return withContext(Dispatchers.IO) {
+            joinGroupsAndMembers { GroupMembers.user eq principal.userId }
+                .select(Groups.id, Groups.name, Groups.owner, GroupMembers.id)
+                .page(pageRequest) { it.toSortColumn() }
+                .map { it.intoGroupInfo() }
+                .toList()
+        }
     }
-}
 
-@OptIn(ExperimentalTime::class)
-private fun GroupSort.toSortColumn(): Expression<*> = when (this) {
-    GroupSort.CREATED -> Groups.createdAt
-    GroupSort.MODIFIED -> Groups.lastActivityAt
-}
-
-@OptIn(ExperimentalTime::class)
-suspend fun updateGroupActivityTimestamp(groupId: UUID) = withContext(Dispatchers.IO) {
-    Groups.update(where = { Groups.id eq groupId }, limit = 1) {
-        it[Groups.lastActivityAt] = Clock.System.now()
+    private fun GroupSort.toSortColumn(): Expression<*> = when (this) {
+        GroupSort.CREATED -> Groups.createdAt
+        GroupSort.MODIFIED -> Groups.lastActivityAt
     }
-}
 
-private fun joinGroupsAndMembers(
-    joinType: JoinType = JoinType.INNER,
-    additionalConstraint: (() -> Op<Boolean>)? = null
-): Join {
-    return Groups.join(
-        GroupMembers,
-        onColumn = Groups.id,
-        otherColumn = GroupMembers.groupId,
-        joinType = joinType,
-        additionalConstraint = additionalConstraint
-    )
-}
+    suspend fun updateGroupActivityTimestamp(groupId: Uuid) = withContext(Dispatchers.IO) {
+        Groups.update(where = { Groups.id eq groupId }, limit = 1) {
+            it[Groups.lastActivityAt] = Clock.System.now()
+        }
+    }
 
-private fun ResultRow.intoGroupInfo(): GroupInfo = GroupInfo(this[Groups.id], this[Groups.name], this[Groups.owner], this[GroupMembers.id])
+    private fun joinGroupsAndMembers(
+        joinType: JoinType = JoinType.INNER,
+        additionalConstraint: (() -> Op<Boolean>)? = null
+    ): Join {
+        return Groups.join(
+            GroupMembers,
+            onColumn = Groups.id,
+            otherColumn = GroupMembers.groupId,
+            joinType = joinType,
+            additionalConstraint = additionalConstraint
+        )
+    }
+
+    private fun ResultRow.intoGroupInfo(): GroupInfo =
+        GroupInfo(this[Groups.id], this[Groups.name], this[Groups.owner], this[GroupMembers.id])
+
+}

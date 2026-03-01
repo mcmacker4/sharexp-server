@@ -2,7 +2,7 @@ package es.hgg.sharexp.server.api.groups.expenses
 
 import arrow.core.raise.Raise
 import es.hgg.sharexp.server.AppError
-import es.hgg.sharexp.server.api.parseUUID
+import es.hgg.sharexp.server.api.parseUuid
 import io.ktor.server.routing.*
 
 
@@ -17,4 +17,4 @@ fun Route.expensesApi() = route("/expenses") {
 }
 
 context(raise: Raise<AppError>) fun RoutingCall.getExpenseIdParam() =
-    raise.parseUUID(pathParameters["expenseId"]) { AppError.BadRequest }
+    raise.parseUuid(pathParameters["expenseId"]) { AppError.BadRequest }

@@ -1,13 +1,10 @@
-@file:UseSerializers(UUIDSerializer::class)
-
 package es.hgg.sharexp.api.model
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.UseSerializers
-import java.util.*
+import kotlin.uuid.Uuid
 
 @Serializable
-data class MemberInfo(val memberId: UUID, val name: String)
+data class MemberInfo(val memberId: Uuid, val name: String)
 
 @Serializable
 data class AddMemberRequest(val name: String)

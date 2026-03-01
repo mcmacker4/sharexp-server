@@ -4,7 +4,7 @@ import es.hgg.sharexp.api.model.SplitMethod
 import es.hgg.sharexp.server.ExpenseError
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.util.*
+import kotlin.uuid.Uuid
 
 /**
  * Creates a solver depending on the chosen split method.
@@ -19,26 +19,26 @@ fun createExpenseSolver(
 }
 
 sealed interface ExpenseSolver {
-    fun validate(totalAmount: Long, participants: Map<UUID, Long>): ExpenseError?
-    fun solve(paidBy: UUID, totalAmount: Long, participants: Map<UUID, Long>): Map<UUID, Long>
+    fun validate(totalAmount: Long, participants: Map<Uuid, Long>): ExpenseError?
+    fun solve(paidBy: Uuid, totalAmount: Long, participants: Map<Uuid, Long>): Map<Uuid, Long>
 }
 
 private class EqualAmountsSolver(luckySelector: LuckyParticipantSelector) : PartsSolver(luckySelector) {
-    override fun solve(paidBy: UUID, totalAmount: Long, participants: Map<UUID, Long>): Map<UUID, Long> {
+    override fun solve(paidBy: Uuid, totalAmount: Long, participants: Map<Uuid, Long>): Map<Uuid, Long> {
         return super.solve(paidBy, totalAmount, participants.mapValues { 1 })
     }
 }
 
 private class SpecificAmountsSolver : ExpenseSolver {
-    override fun validate(totalAmount: Long, participants: Map<UUID, Long>): ExpenseError? {
+    override fun validate(totalAmount: Long, participants: Map<Uuid, Long>): ExpenseError? {
         return commonValidations(totalAmount, participants)
     }
 
-    override fun solve(paidBy: UUID, totalAmount: Long, participants: Map<UUID, Long>): Map<UUID, Long> = participants
+    override fun solve(paidBy: Uuid, totalAmount: Long, participants: Map<Uuid, Long>): Map<Uuid, Long> = participants
 }
 
 open class PartsSolver(val luckySelector: LuckyParticipantSelector) : ExpenseSolver {
-    override fun validate(totalAmount: Long, participants: Map<UUID, Long>): ExpenseError? {
+    override fun validate(totalAmount: Long, participants: Map<Uuid, Long>): ExpenseError? {
         commonValidations(totalAmount, participants)?.let { return it }
 
         if (participants.values.sum() > totalAmount)
@@ -47,7 +47,7 @@ open class PartsSolver(val luckySelector: LuckyParticipantSelector) : ExpenseSol
         return null
     }
 
-    override fun solve(paidBy: UUID, totalAmount: Long, participants: Map<UUID, Long>): Map<UUID, Long> {
+    override fun solve(paidBy: Uuid, totalAmount: Long, participants: Map<Uuid, Long>): Map<Uuid, Long> {
         val parts = participants.values.sum()
 
         val total = BigDecimal(totalAmount.toBigInteger(), 2)
@@ -83,14 +83,14 @@ open class PartsSolver(val luckySelector: LuckyParticipantSelector) : ExpenseSol
 }
 
 interface LuckyParticipantSelector {
-    fun select(paidBy: UUID, participants: Set<UUID>): UUID
+    fun select(paidBy: Uuid, participants: Set<Uuid>): Uuid
 
     object Random : LuckyParticipantSelector {
-        override fun select(paidBy: UUID, participants: Set<UUID>): UUID = participants.random()
+        override fun select(paidBy: Uuid, participants: Set<Uuid>): Uuid = participants.random()
     }
 }
 
-private fun commonValidations(totalAmount: Long, participants: Map<UUID, Long>): ExpenseError? {
+private fun commonValidations(totalAmount: Long, participants: Map<Uuid, Long>): ExpenseError? {
     if (participants.isEmpty())
         return ExpenseError.NoParticipants
 

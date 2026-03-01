@@ -10,46 +10,75 @@ import es.hgg.sharexp.api.model.ExpenseSort
 import es.hgg.sharexp.server.AppError
 import es.hgg.sharexp.server.ExpenseError
 import es.hgg.sharexp.server.app.plugins.UserPrincipal
-import es.hgg.sharexp.server.persistence.repositories.upsertExpense
-import es.hgg.sharexp.server.persistence.repositories.selectExpense
-import es.hgg.sharexp.server.persistence.repositories.selectExpensesList
-import es.hgg.sharexp.server.persistence.repositories.selectGroupMembers
-import es.hgg.sharexp.server.persistence.repositories.updateGroupActivityTimestamp
+import es.hgg.sharexp.server.persistence.repositories.ExpenseRepository
+import es.hgg.sharexp.server.persistence.repositories.GroupMemberRepository
+import es.hgg.sharexp.server.persistence.repositories.GroupRepository
 import es.hgg.sharexp.server.util.PageRequest
-import java.util.*
+import kotlin.uuid.Uuid
 
 
-suspend fun Raise<AppError>.createOrUpdateExpense(groupId: UUID, expenseId: UUID?, data: CreateExpenseRequest, principal: UserPrincipal): UUID {
-    ensureUserIsGroupMember(groupId, principal) { AppError.NotFound }
+class GroupExpenseService(
+    val groupRepo: GroupRepository,
+    val expenseRepo: ExpenseRepository,
+    val membersRepo: GroupMemberRepository,
+    val memberService: GroupMemberService,
+) {
 
-    val expenseMembers = data.participants.keys + data.paidBy
-    ensureAllAreMembersOfGroup(groupId, expenseMembers, principal) {
-        ExpenseError.InexistentParticipants(it)
+    context(raise: Raise<AppError>)
+    suspend fun createOrUpdateExpense(
+        groupId: Uuid,
+        expenseId: Uuid?,
+        data: CreateExpenseRequest,
+        principal: UserPrincipal
+    ): Uuid = with(raise) {
+        memberService.ensureUserIsGroupMember(groupId, principal) { AppError.NotFound }
+
+        val expenseMembers = data.participants.keys + data.paidBy
+        ensureAllAreMembersOfGroup(groupId, expenseMembers, principal) {
+            ExpenseError.InexistentParticipants(it)
+        }
+
+        val expenseSolver = createExpenseSolver(data.splitMethod)
+        expenseSolver.validate(data.amount, data.participants)?.let {
+            raise(it)
+        }
+
+        val computedAmounts = expenseSolver.solve(data.paidBy, data.amount, data.participants)
+
+        ensureNotNull(expenseRepo.upsertExpense(groupId, expenseId, data, computedAmounts)) { AppError.Internal }
+            .also { groupRepo.updateGroupActivityTimestamp(groupId) }
     }
 
-    val expenseSolver = createExpenseSolver(data.splitMethod)
-    expenseSolver.validate(data.amount, data.participants)?.let {
-        raise(it)
+    context(raise: Raise<AppError>)
+    suspend fun fetchGroupExpenses(
+        groupId: Uuid,
+        pageRequest: PageRequest<ExpenseSort>,
+        principal: UserPrincipal
+    ): List<ExpenseListItem> = with(raise) {
+        memberService.ensureUserIsGroupMember(groupId, principal) { AppError.NotFound }
+        return expenseRepo.selectExpensesList(groupId, pageRequest, principal)
     }
 
-    val computedAmounts = expenseSolver.solve(data.paidBy, data.amount, data.participants)
+    context(raise: Raise<AppError>)
+    suspend fun fetchGroupExpense(
+        groupId: Uuid,
+        expenseId: Uuid,
+        principal: UserPrincipal
+    ): ExpenseInfo = with(raise) {
+        memberService.ensureUserIsGroupMember(groupId, principal) { AppError.NotFound }
+        return ensureNotNull(expenseRepo.selectExpense(groupId, expenseId, principal)) { AppError.NotFound }
+    }
 
-    return ensureNotNull(upsertExpense(groupId, expenseId, data, computedAmounts)) { AppError.Internal }
-        .also { updateGroupActivityTimestamp(groupId) }
-}
+    context(raise: Raise<E>)
+    private suspend inline fun <E> ensureAllAreMembersOfGroup(
+        groupId: Uuid,
+        members: Set<Uuid>,
+        principal: UserPrincipal,
+        toError: (Set<Uuid>) -> E
+    ): Unit = with(raise) {
+        val groupMembers = membersRepo.selectGroupMembers(groupId, principal.userId).map { it.memberId }.toSet()
+        val invalidMembers = members.filterTo(mutableSetOf()) { !groupMembers.contains(it) }
+        ensure(invalidMembers.isEmpty()) { raise(toError(invalidMembers)) }
+    }
 
-suspend fun Raise<AppError>.fetchGroupExpenses(groupId: UUID, pageRequest: PageRequest<ExpenseSort>, principal: UserPrincipal): List<ExpenseListItem> {
-    ensureUserIsGroupMember(groupId, principal) { AppError.NotFound }
-    return selectExpensesList(groupId, pageRequest, principal)
-}
-
-suspend fun Raise<AppError>.fetchGroupExpense(groupId: UUID, expenseId: UUID, principal: UserPrincipal): ExpenseInfo {
-    ensureUserIsGroupMember(groupId, principal) { AppError.NotFound }
-    return ensureNotNull(selectExpense(groupId, expenseId, principal)) { AppError.NotFound }
-}
-
-private suspend inline fun<E> Raise<E>.ensureAllAreMembersOfGroup(groupId: UUID, members: Set<UUID>, principal: UserPrincipal, toError: (Set<UUID>) -> E) {
-    val groupMembers = selectGroupMembers(groupId, principal.userId).map { it.memberId }.toSet()
-    val invalidMembers = members.filterTo(mutableSetOf()) { !groupMembers.contains(it) }
-    ensure(invalidMembers.isEmpty()) { raise(toError(invalidMembers)) }
 }

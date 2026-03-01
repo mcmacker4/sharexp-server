@@ -2,19 +2,18 @@ import es.hgg.sharexp.api.model.SplitMethod
 import es.hgg.sharexp.server.ExpenseError
 import es.hgg.sharexp.server.service.LuckyParticipantSelector
 import es.hgg.sharexp.server.service.createExpenseSolver
-import es.hgg.sharexp.server.util.UUIDv7
-import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.uuid.Uuid
 
 
 class ExpenseSolversTest {
 
     companion object {
-        private val BOB = UUIDv7.generate()
-        private val ALICE = UUIDv7.generate()
-        private val STEVE = UUIDv7.generate()
+        private val BOB = Uuid.generateV7()
+        private val ALICE = Uuid.generateV7()
+        private val STEVE = Uuid.generateV7()
 
         init {
             println("BOB   = $BOB")
@@ -23,8 +22,8 @@ class ExpenseSolversTest {
         }
     }
 
-    class RiggedLuckySelector(val participant: UUID) : LuckyParticipantSelector {
-        override fun select(paidBy: UUID, participants: Set<UUID>): UUID = participant
+    class RiggedLuckySelector(val participant: Uuid) : LuckyParticipantSelector {
+        override fun select(paidBy: Uuid, participants: Set<Uuid>): Uuid = participant
     }
 
     @Test

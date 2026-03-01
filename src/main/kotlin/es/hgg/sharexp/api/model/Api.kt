@@ -1,10 +1,7 @@
-@file:UseSerializers(UUIDSerializer::class)
-
 package es.hgg.sharexp.api.model
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.UseSerializers
-import java.util.UUID
+import kotlin.uuid.Uuid
 
 @Serializable
-data class NewEntityResponse(val id: UUID)
+data class NewEntityResponse(val id: Uuid)

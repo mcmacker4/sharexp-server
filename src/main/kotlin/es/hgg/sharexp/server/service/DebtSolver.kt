@@ -5,33 +5,39 @@ import es.hgg.sharexp.api.model.Debt
 import es.hgg.sharexp.server.AppError
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.UUID
 import kotlin.math.abs
 import kotlin.math.min
+import kotlin.uuid.Uuid
 
-private val logger: Logger = LoggerFactory.getLogger("DebtSolver")
 
-fun Raise<AppError>.solveDebts(balances: Map<UUID, Long>): List<Debt> {
-    val remainingBalances = balances.filterValues { it != 0L }.toMutableMap()
-    val debts = mutableListOf<Debt>()
+class DebtSolver {
 
-    // This algorithm should always balance everything out in N-1 iterations, N being the number of people with non-zero balance
-    repeat(remainingBalances.size - 1) {
-        val (debtor, debtorBalance) = remainingBalances.minBy { it.value }
-        val (creditor, creditorBalance) = remainingBalances.maxBy { it.value }
+    private val logger: Logger = LoggerFactory.getLogger("DebtSolver")
 
-        val amount = min(abs(debtorBalance), abs(creditorBalance))
+    context(raise: Raise<AppError>)
+    fun solveDebts(balances: Map<Uuid, Long>): List<Debt> = with(raise) {
+        val remainingBalances = balances.filterValues { it != 0L }.toMutableMap()
+        val debts = mutableListOf<Debt>()
 
-        debts += Debt(debtor, creditor, amount)
+        // This algorithm should always balance everything out in N-1 iterations, N being the number of people with non-zero balance
+        repeat(remainingBalances.size - 1) {
+            val (debtor, debtorBalance) = remainingBalances.minBy { it.value }
+            val (creditor, creditorBalance) = remainingBalances.maxBy { it.value }
 
-        remainingBalances.replace(debtor, debtorBalance + amount)
-        remainingBalances.replace(creditor, creditorBalance - amount)
+            val amount = min(abs(debtorBalance), abs(creditorBalance))
+
+            debts += Debt(debtor, creditor, amount)
+
+            remainingBalances.replace(debtor, debtorBalance + amount)
+            remainingBalances.replace(creditor, creditorBalance - amount)
+        }
+
+        if (remainingBalances.any { it.value > 0L }) {
+            logger.error("Error solving debts. Balances: {}, Remaining: {}", balances, remainingBalances)
+            raise(AppError.Internal)
+        }
+
+        return debts
     }
 
-    if (remainingBalances.any { it.value > 0L }) {
-        logger.error("Error solving debts. Balances: {}, Remaining: {}", balances, remainingBalances)
-        raise(AppError.Internal)
-    }
-
-    return debts
 }

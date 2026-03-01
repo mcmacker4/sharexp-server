@@ -7,21 +7,24 @@ import es.hgg.sharexp.api.model.NewEntityResponse
 import es.hgg.sharexp.server.ExpenseError
 import es.hgg.sharexp.server.api.getUserPrincipal
 import es.hgg.sharexp.server.api.groups.getGroupIdParam
-import es.hgg.sharexp.server.service.createOrUpdateExpense
+import es.hgg.sharexp.server.service.GroupExpenseService
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
+import org.koin.ktor.ext.inject
 
 
 fun Route.postExpense() = post {
     val principal = call.getUserPrincipal()
 
+    val service by inject<GroupExpenseService>()
+
     either {
         val req = call.receive<CreateExpenseRequest>()
 
         val expenseId = suspendTransaction {
-            createOrUpdateExpense(call.getGroupIdParam(), null, req, principal)
+            service.createOrUpdateExpense(call.getGroupIdParam(), null, req, principal)
         }
 
         NewEntityResponse(expenseId)

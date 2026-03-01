@@ -9,13 +9,13 @@ import es.hgg.sharexp.server.api.auth.authentication
 import es.hgg.sharexp.server.api.groups.groupsApi
 import es.hgg.sharexp.server.app.plugins.UserPrincipal
 import es.hgg.sharexp.server.util.PageRequest
-import io.ktor.http.HttpStatusCode
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.util.reflect.*
-import java.util.*
+import kotlin.uuid.Uuid
 
 fun Application.configureApi() = routing {
     authentication()
@@ -24,9 +24,9 @@ fun Application.configureApi() = routing {
     }
 }
 
-fun <Error> Raise<Error>.parseUUID(param: String?, error: () -> Error): UUID {
+fun <Error> Raise<Error>.parseUuid(param: String?, error: () -> Error): Uuid {
     val groupRaw = ensureNotNull(param, error)
-    return catch({ UUID.fromString(groupRaw) }) { raise(error()) }
+    return catch({ Uuid.parse(groupRaw) }) { raise(error()) }
 }
 
 suspend inline fun RoutingContext.respondIfError(block: Raise<AppError>.() -> Unit) {

@@ -1,21 +1,18 @@
-@file:UseSerializers(UUIDSerializer::class)
-
 package es.hgg.sharexp.api.model
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.UseSerializers
-import java.util.*
+import kotlin.uuid.Uuid
 
 
 @Serializable
 data class BalanceReport(
-    val balances: Map<UUID, Long>,
+    val balances: Map<Uuid, Long>,
     val debts: List<Debt>,
 )
 
 @Serializable
 data class Debt(
-    val debtor: UUID,
-    val creditor: UUID,
+    val debtor: Uuid,
+    val creditor: Uuid,
     val amount: Long,
 )

@@ -5,19 +5,26 @@ import arrow.core.raise.Raise
 import es.hgg.sharexp.api.model.BalanceReport
 import es.hgg.sharexp.server.AppError
 import es.hgg.sharexp.server.app.plugins.UserPrincipal
-import es.hgg.sharexp.server.persistence.repositories.selectParticipantBalances
-import es.hgg.sharexp.server.persistence.repositories.selectPositiveBalances
-import java.util.UUID
+import es.hgg.sharexp.server.persistence.repositories.BalanceRepository
+import kotlin.uuid.Uuid
 
+class BalanceService(
+    val memberService: GroupMemberService,
+    val repo: BalanceRepository,
+    val solver: DebtSolver,
+) {
 
-suspend fun Raise<AppError>.fetchGroupBalanceReport(groupId: UUID, principal: UserPrincipal): BalanceReport {
-    ensureUserIsGroupMember(groupId, principal) { AppError.NotFound }
+    context(raise: Raise<AppError>)
+    suspend fun fetchGroupBalanceReport(groupId: Uuid, principal: UserPrincipal): BalanceReport = with(raise) {
+        memberService.ensureUserIsGroupMember(groupId, principal) { AppError.NotFound }
 
-    val positiveBalances = selectPositiveBalances(groupId)
-    val negativeBalances = selectParticipantBalances(groupId)
+        val positiveBalances = repo.selectPositiveBalances(groupId)
+        val negativeBalances = repo.selectParticipantBalances(groupId)
 
-    val balances = positiveBalances.combine(negativeBalances, Long::plus)
-    val debts = solveDebts(balances)
+        val balances = positiveBalances.combine(negativeBalances, Long::plus)
+        val debts = solver.solveDebts(balances)
 
-    return BalanceReport(balances, debts)
+        return BalanceReport(balances, debts)
+    }
+
 }
