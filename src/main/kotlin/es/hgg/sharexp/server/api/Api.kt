@@ -2,8 +2,9 @@ package es.hgg.sharexp.server.api
 
 import arrow.core.raise.Raise
 import arrow.core.raise.catch
+import arrow.core.raise.context.ensureNotNull
+import arrow.core.raise.context.raise
 import arrow.core.raise.either
-import arrow.core.raise.ensureNotNull
 import es.hgg.sharexp.server.AppError
 import es.hgg.sharexp.server.api.auth.authentication
 import es.hgg.sharexp.server.api.groups.groupsApi
@@ -24,7 +25,8 @@ fun Application.configureApi() = routing {
     }
 }
 
-fun <Error> Raise<Error>.parseUuid(param: String?, error: () -> Error): Uuid {
+context(_: Raise<Error>)
+fun <Error> parseUuid(param: String?, error: () -> Error): Uuid {
     val groupRaw = ensureNotNull(param, error)
     return catch({ Uuid.parse(groupRaw) }) { raise(error()) }
 }

@@ -16,5 +16,5 @@ fun Route.expensesApi() = route("/expenses") {
     }
 }
 
-context(raise: Raise<AppError>) fun RoutingCall.getExpenseIdParam() =
-    raise.parseUuid(pathParameters["expenseId"]) { AppError.BadRequest }
+context(_: Raise<AppError>)
+fun RoutingCall.getExpenseIdParam() = parseUuid(pathParameters["expenseId"]) { AppError.BadRequest }

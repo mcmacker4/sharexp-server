@@ -1,7 +1,7 @@
 package es.hgg.sharexp.server.service
 
 import arrow.core.raise.Raise
-import arrow.core.raise.ensureNotNull
+import arrow.core.raise.context.ensureNotNull
 import es.hgg.sharexp.api.model.GroupInfo
 import es.hgg.sharexp.api.model.GroupSort
 import es.hgg.sharexp.server.AppError
@@ -22,8 +22,8 @@ class GroupService(
 
     private val logger: Logger = LoggerFactory.getLogger("GroupService")
 
-    context(raise: Raise<AppError>)
-    suspend fun createGroup(groupName: String, principal: UserPrincipal): Uuid = with(raise) {
+    context(_: Raise<AppError>)
+    suspend fun createGroup(groupName: String, principal: UserPrincipal): Uuid {
         val ownerId = principal.userId
 
         val ownerDisplayName = ensureNotNull(userRepo.selectUserDisplayName(ownerId)) {
@@ -46,13 +46,13 @@ class GroupService(
         principal: UserPrincipal
     ): List<GroupInfo> = groupRepo.selectAllVisibleGroups(pageRequest, principal)
 
-    context(raise: Raise<AppError>)
-    suspend fun fetchGroupData(groupId: Uuid, principal: UserPrincipal): GroupInfo = with(raise) {
-        ensureNotNull(groupRepo.selectGroupById(groupId, principal)) { AppError.NotFound }
+    context(_: Raise<AppError>)
+    suspend fun fetchGroupData(groupId: Uuid, principal: UserPrincipal): GroupInfo {
+        return ensureNotNull(groupRepo.selectGroupById(groupId, principal)) { AppError.NotFound }
     }
 
-    context(raise: Raise<AppError>)
-    suspend fun isUserOwnerOfGroup(groupId: Uuid, principal: UserPrincipal): Boolean = with(raise) {
+    context(_: Raise<AppError>)
+    suspend fun isUserOwnerOfGroup(groupId: Uuid, principal: UserPrincipal): Boolean {
         val owner = fetchGroupData(groupId, principal).owner
         logger.trace("Owner of group {} is {}", groupId, owner)
         return owner == principal.userId

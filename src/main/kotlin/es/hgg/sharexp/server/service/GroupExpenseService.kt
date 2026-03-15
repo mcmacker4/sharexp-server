@@ -1,8 +1,9 @@
 package es.hgg.sharexp.server.service
 
 import arrow.core.raise.Raise
-import arrow.core.raise.ensure
-import arrow.core.raise.ensureNotNull
+import arrow.core.raise.context.ensure
+import arrow.core.raise.context.ensureNotNull
+import arrow.core.raise.context.raise
 import es.hgg.sharexp.api.model.CreateExpenseRequest
 import es.hgg.sharexp.api.model.ExpenseInfo
 import es.hgg.sharexp.api.model.ExpenseListItem
@@ -24,13 +25,13 @@ class GroupExpenseService(
     val memberService: GroupMemberService,
 ) {
 
-    context(raise: Raise<AppError>)
+    context(_: Raise<AppError>)
     suspend fun createOrUpdateExpense(
         groupId: Uuid,
         expenseId: Uuid?,
         data: CreateExpenseRequest,
         principal: UserPrincipal
-    ): Uuid = with(raise) {
+    ): Uuid {
         memberService.ensureUserIsGroupMember(groupId, principal) { AppError.NotFound }
 
         val expenseMembers = data.participants.keys + data.paidBy
@@ -45,37 +46,43 @@ class GroupExpenseService(
 
         val computedAmounts = expenseSolver.solve(data.paidBy, data.amount, data.participants)
 
-        ensureNotNull(expenseRepo.upsertExpense(groupId, expenseId, data, computedAmounts)) { AppError.Internal }
-            .also { groupRepo.updateGroupActivityTimestamp(groupId) }
+        return ensureNotNull(
+            expenseRepo.upsertExpense(
+                groupId,
+                expenseId,
+                data,
+                computedAmounts
+            )
+        ) { AppError.Internal }.also { groupRepo.updateGroupActivityTimestamp(groupId) }
     }
 
-    context(raise: Raise<AppError>)
+    context(_: Raise<AppError>)
     suspend fun fetchGroupExpenses(
         groupId: Uuid,
         pageRequest: PageRequest<ExpenseSort>,
         principal: UserPrincipal
-    ): List<ExpenseListItem> = with(raise) {
+    ): List<ExpenseListItem> {
         memberService.ensureUserIsGroupMember(groupId, principal) { AppError.NotFound }
         return expenseRepo.selectExpensesList(groupId, pageRequest, principal)
     }
 
-    context(raise: Raise<AppError>)
+    context(_: Raise<AppError>)
     suspend fun fetchGroupExpense(
         groupId: Uuid,
         expenseId: Uuid,
         principal: UserPrincipal
-    ): ExpenseInfo = with(raise) {
+    ): ExpenseInfo {
         memberService.ensureUserIsGroupMember(groupId, principal) { AppError.NotFound }
         return ensureNotNull(expenseRepo.selectExpense(groupId, expenseId, principal)) { AppError.NotFound }
     }
 
-    context(raise: Raise<E>)
+    context(_: Raise<E>)
     private suspend inline fun <E> ensureAllAreMembersOfGroup(
         groupId: Uuid,
         members: Set<Uuid>,
         principal: UserPrincipal,
         toError: (Set<Uuid>) -> E
-    ): Unit = with(raise) {
+    ) {
         val groupMembers = membersRepo.selectGroupMembers(groupId, principal.userId).map { it.memberId }.toSet()
         val invalidMembers = members.filterTo(mutableSetOf()) { !groupMembers.contains(it) }
         ensure(invalidMembers.isEmpty()) { raise(toError(invalidMembers)) }

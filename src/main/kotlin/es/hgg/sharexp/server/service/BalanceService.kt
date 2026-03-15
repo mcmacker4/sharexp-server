@@ -14,8 +14,8 @@ class BalanceService(
     val solver: DebtSolver,
 ) {
 
-    context(raise: Raise<AppError>)
-    suspend fun fetchGroupBalanceReport(groupId: Uuid, principal: UserPrincipal): BalanceReport = with(raise) {
+    context(_: Raise<AppError>)
+    suspend fun fetchGroupBalanceReport(groupId: Uuid, principal: UserPrincipal): BalanceReport {
         memberService.ensureUserIsGroupMember(groupId, principal) { AppError.NotFound }
 
         val positiveBalances = repo.selectPositiveBalances(groupId)

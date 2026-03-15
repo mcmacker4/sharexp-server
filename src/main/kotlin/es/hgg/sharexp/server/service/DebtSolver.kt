@@ -1,6 +1,7 @@
 package es.hgg.sharexp.server.service
 
 import arrow.core.raise.Raise
+import arrow.core.raise.context.raise
 import es.hgg.sharexp.api.model.Debt
 import es.hgg.sharexp.server.AppError
 import org.slf4j.Logger
@@ -14,8 +15,8 @@ class DebtSolver {
 
     private val logger: Logger = LoggerFactory.getLogger("DebtSolver")
 
-    context(raise: Raise<AppError>)
-    fun solveDebts(balances: Map<Uuid, Long>): List<Debt> = with(raise) {
+    context(_: Raise<AppError>)
+    fun solveDebts(balances: Map<Uuid, Long>): List<Debt> {
         val remainingBalances = balances.filterValues { it != 0L }.toMutableMap()
         val debts = mutableListOf<Debt>()
 

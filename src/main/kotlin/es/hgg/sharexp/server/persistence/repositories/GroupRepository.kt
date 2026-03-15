@@ -1,18 +1,16 @@
 package es.hgg.sharexp.server.persistence.repositories
 
-import es.hgg.sharexp.api.model.GroupInfo
 import es.hgg.sharexp.api.model.GroupSort
+import es.hgg.sharexp.api.model.GroupInfo
 import es.hgg.sharexp.server.app.plugins.UserPrincipal
 import es.hgg.sharexp.server.persistence.tables.GroupMembers
 import es.hgg.sharexp.server.persistence.tables.Groups
 import es.hgg.sharexp.server.persistence.tables.insertReturningId
 import es.hgg.sharexp.server.persistence.tables.page
 import es.hgg.sharexp.server.util.PageRequest
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.r2dbc.select
 import org.jetbrains.exposed.v1.r2dbc.update
@@ -21,10 +19,10 @@ import kotlin.uuid.Uuid
 
 class GroupRepository {
 
-    suspend fun insertGroup(name: String, owner: Uuid): Uuid? = withContext(Dispatchers.IO) {
+    suspend fun insertGroup(name: String, owner: Uuid): Uuid? {
         val now = Clock.System.now()
 
-        Groups.insertReturningId(Groups.id) {
+        return Groups.insertReturningId(Groups.id) {
             it[Groups.name] = name
             it[Groups.owner] = owner
             it[Groups.createdAt] = now
@@ -33,23 +31,19 @@ class GroupRepository {
     }
 
     suspend fun selectGroupById(groupId: Uuid, principal: UserPrincipal): GroupInfo? {
-        return withContext(Dispatchers.IO) {
-            joinGroupsAndMembers { GroupMembers.user eq principal.userId }
-                .select(Groups.id, Groups.name, Groups.owner, GroupMembers.id)
-                .where { (Groups.id eq groupId) }
-                .map { it.intoGroupInfo() }
-                .singleOrNull()
-        }
+        return joinGroupsAndMembers { GroupMembers.user eq principal.userId }
+            .select(Groups.id, Groups.name, Groups.owner, GroupMembers.id)
+            .where { (Groups.id eq groupId) }
+            .map { it.intoGroupInfo() }
+            .singleOrNull()
     }
 
     suspend fun selectAllVisibleGroups(pageRequest: PageRequest<GroupSort>, principal: UserPrincipal): List<GroupInfo> {
-        return withContext(Dispatchers.IO) {
-            joinGroupsAndMembers { GroupMembers.user eq principal.userId }
-                .select(Groups.id, Groups.name, Groups.owner, GroupMembers.id)
-                .page(pageRequest) { it.toSortColumn() }
-                .map { it.intoGroupInfo() }
-                .toList()
-        }
+        return joinGroupsAndMembers { GroupMembers.user eq principal.userId }
+            .select(Groups.id, Groups.name, Groups.owner, GroupMembers.id)
+            .page(pageRequest) { it.toSortColumn() }
+            .map { it.intoGroupInfo() }
+            .toList()
     }
 
     private fun GroupSort.toSortColumn(): Expression<*> = when (this) {
@@ -57,8 +51,8 @@ class GroupRepository {
         GroupSort.MODIFIED -> Groups.lastActivityAt
     }
 
-    suspend fun updateGroupActivityTimestamp(groupId: Uuid) = withContext(Dispatchers.IO) {
-        Groups.update(where = { Groups.id eq groupId }, limit = 1) {
+    suspend fun updateGroupActivityTimestamp(groupId: Uuid) {
+        Groups.update(where = { Groups.id eq groupId }) {
             it[Groups.lastActivityAt] = Clock.System.now()
         }
     }

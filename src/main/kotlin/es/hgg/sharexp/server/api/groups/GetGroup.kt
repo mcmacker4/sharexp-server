@@ -11,7 +11,8 @@ import org.koin.ktor.ext.inject
 fun Route.getGroup() = get {
     val service by inject<GroupService>()
     respondEither {
-        suspendTransaction { service.fetchGroupData(call.getGroupIdParam(), call.getUserPrincipal()) }
+        suspendTransaction {
+            service.fetchGroupData(call.getGroupIdParam(), call.getUserPrincipal())
+        }
     }
-
 }

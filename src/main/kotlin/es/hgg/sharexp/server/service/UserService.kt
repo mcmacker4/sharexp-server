@@ -1,8 +1,8 @@
 package es.hgg.sharexp.server.service
 
 import arrow.core.raise.Raise
-import arrow.core.raise.ensure
-import arrow.core.raise.ensureNotNull
+import arrow.core.raise.context.ensure
+import arrow.core.raise.context.ensureNotNull
 import es.hgg.sharexp.server.persistence.repositories.UserRepository
 import org.mindrot.jbcrypt.BCrypt.gensalt
 import org.mindrot.jbcrypt.BCrypt.hashpw
@@ -18,7 +18,7 @@ sealed interface CreateUserError {
 class UserService(
     val repo: UserRepository,
 ) {
-    context(raise: Raise<CreateUserError>)
+    context(_: Raise<CreateUserError>)
     suspend fun createUser(
         username: String,
         email: String,
@@ -32,11 +32,11 @@ class UserService(
             pwHash = hashpw(password, gensalt()),
         )
 
-        raise.ensureNotNull(newId) { CreateUserError.UserExists }
+        ensureNotNull(newId) { CreateUserError.UserExists }
     }
 
-    context(raise: Raise<CreateUserError>)
-    private fun validateUserData(username: String, password: String) = with(raise) {
+    context(_: Raise<CreateUserError>)
+    private fun validateUserData(username: String, password: String) {
         ensure(username.length > 3) { CreateUserError.InvalidUserName }
         ensure(username.first().isLetter()) { CreateUserError.InvalidUserName }
         ensure(username.all { it.isLetterOrDigit() || ALLOWED_USERNAME_CHARS.contains(it) }) { CreateUserError.InvalidUserName }
